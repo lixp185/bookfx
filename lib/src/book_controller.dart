@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 
 class BookController extends ChangeNotifier {
-  bool isNext = true;
+  int nextType = 0;
+  int currentIndex = 0; // 当前页
+  int goToIndex = 0; // 跳转页
 
-  int pageIndex = 0; // 页码
   /// 上一页
   last() {
-    isNext = false;
+    nextType = -1;
     notifyListeners();
   }
 
   /// 下一页
   next() {
-    isNext = true;
+    nextType = 1;
     notifyListeners();
   }
 
   // 跳页
   goTo(int index) {
-    pageIndex = index;
+    nextType = 0;
+    goToIndex = index;
     notifyListeners();
   }
 }

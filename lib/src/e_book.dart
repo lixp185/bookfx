@@ -22,6 +22,7 @@ class EBook extends StatefulWidget {
   //书籍边距
   final EdgeInsetsGeometry padding;
   final EBookController? eBookController;
+  final BookController bookController;
 
   const EBook(
       {Key? key,
@@ -30,7 +31,8 @@ class EBook extends StatefulWidget {
       required this.maxHeight,
       this.fontSize = 16.0,
       this.padding = const EdgeInsetsDirectional.all(15),
-      this.eBookController})
+      this.eBookController,
+      required this.bookController})
       : super(key: key);
 
   @override
@@ -38,7 +40,6 @@ class EBook extends StatefulWidget {
 }
 
 class _EBookState extends State<EBook> {
-  BookController controller = BookController();
   String data = """""";
   double textHeight = 10;
   double fontSize = 26;
@@ -160,13 +161,16 @@ class _EBookState extends State<EBook> {
                       Positioned(
                         child: Text("$index"),
                         bottom: 0,
+                        left: 0,
+                        right: 0,
                       )
                     ],
                   ));
             },
             currentPage: (int index) {
               /// 当前页 index 页码
-              return Container(
+              return Stack(
+                children: [ Container(
                   padding: widget.padding,
                   width: double.infinity,
                   height: double.infinity,
@@ -177,7 +181,7 @@ class _EBookState extends State<EBook> {
                       Text(
                         data.isNotEmpty
                             ? data.substring(
-                                allPages[index], allPages[index + 1])
+                            allPages[index], allPages[index + 1])
                             : "",
                         maxLines: maxTextHeight ~/ textHeight,
                         style: TextStyle(
@@ -187,9 +191,16 @@ class _EBookState extends State<EBook> {
                       ),
                       // Text("$index"),
                     ],
-                  ));
+                  )),
+                  Positioned(
+                    child: Text("$index"),
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                  )],
+              );
             },
-            controller: controller,
+            controller: widget.bookController,
           )
         : const Center(
             child: Text(

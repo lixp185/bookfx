@@ -37,7 +37,7 @@ class BookFx extends StatefulWidget {
   /// 上一页回调
   final Function(int index)? lastCallBack;
 
-  final BookController? controller;
+  final BookController controller;
 
   const BookFx({
     Key? key,
@@ -84,8 +84,8 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       if (status == AnimationStatus.completed) {
         if (isNext) {
           setState(() {
-            currentIndex++;
-            widget.nextCallBack?.call(currentIndex);
+            widget.controller.currentIndex++;
+            widget.nextCallBack?.call(widget.controller.currentIndex);
           });
         }
         isAnimation = false;
@@ -96,28 +96,64 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       }
     });
 
+  // 当前页面
+
   @override
   void initState() {
     super.initState();
     // build完毕初始化首页
+    // 当前页码
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _p.value = PaperPoint(Point(size.width, size.height), size);
     });
-    widget.controller?.addListener(() {
-      if (widget.controller?.isNext == true) {
+    widget.controller.addListener(() {
+      if (isAnimation == true) {
+        // 翻页动画正在执行
+        return;
+      }
+      if (widget.controller.nextType == 1) {
         /// 下一页
-      } else {
-        /// 上一页
-        if (currentIndex == 0) {
-          return;
-        }
         isAnimation = true;
-        currentA = Point(-200, size.height - 100);
-        currentIndex--;
-        isNext = false;
+        isNext = true;
+        currentA = Point(size.width - 50, size.height - 50);
         _controller.forward(
           from: 0,
         );
+      } else if (widget.controller.nextType == -1) {
+        /// 上一页
+        if (widget.controller.currentIndex != 0) {
+          setState(() {
+            isAnimation = true;
+            currentA = Point(-200, size.height - 100);
+            widget.controller.currentIndex--;
+            isNext = false;
+            _controller.forward(
+              from: 0,
+            );
+          });
+          return;
+        } else {
+          // 首页了
+        }
+      } else if (widget.controller.nextType == 0) {
+        // 跳页
+
+        if (widget.controller.goToIndex == widget.controller.currentIndex) {
+          return;
+        } else if (widget.controller.goToIndex >
+            widget.controller.currentIndex) {
+          setState(() {
+            widget.controller.currentIndex = widget.controller.goToIndex - 2;
+          });
+          widget.controller.next();
+        } else if (widget.controller.goToIndex <
+            widget.controller.currentIndex) {
+          setState(() {
+            widget.controller.currentIndex = widget.controller.goToIndex - 2;
+          });
+
+          widget.controller.last();
+        }
       }
     });
   }
@@ -134,9 +170,6 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
   final ValueNotifier<PaperPoint> _p =
       ValueNotifier(PaperPoint(const Point(0, 0), const Size(0, 0)));
 
-  // 当前页码
-  int currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -145,13 +178,13 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       child: GestureDetector(
         child: Stack(
           children: [
-            currentIndex == widget.pageCount - 1
+            widget.controller.currentIndex == widget.pageCount - 1
                 ? const SizedBox()
                 // 下一页
-                : widget.nextPage(currentIndex + 1),
+                : widget.nextPage(widget.controller.currentIndex + 1),
             // // 当前页
             ClipPath(
-              child: widget.currentPage(currentIndex),
+              child: widget.currentPage(widget.controller.currentIndex),
               clipper: CurrentPaperClipPath(_p),
             ),
             CustomPaint(
@@ -179,7 +212,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           downPos = d.localPosition;
           // _p.value = PaperPoint(Point(down.dx, down.dy), size);
         },
-        onPanUpdate: currentIndex == widget.pageCount - 1
+        onPanUpdate: widget.controller.currentIndex == widget.pageCount - 1
             ? null
             : (d) {
                 if (isAnimation) {
@@ -216,21 +249,21 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
                   isNext = false;
                 }
               },
-        onPanEnd: currentIndex == widget.pageCount - 1
+        onPanEnd: widget.controller.currentIndex == widget.pageCount - 1
             ? null
             : (d) {
                 if (isAnimation) {
                   return;
                 }
                 if (downPos.dx < size.width / 2) {
-                  if (currentIndex == 0) {
-                    widget.lastCallBack?.call(currentIndex);
+                  if (widget.controller.currentIndex == 0) {
+                    widget.lastCallBack?.call(widget.controller.currentIndex);
                     return;
                   }
-                  widget.lastCallBack?.call(currentIndex);
+                  widget.lastCallBack?.call(widget.controller.currentIndex);
                   isAnimation = true;
                   currentA = Point(-200, size.height - 100);
-                  currentIndex--;
+                  widget.controller.currentIndex--;
                   isNext = false;
                   _controller.forward(
                     from: 0,
