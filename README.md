@@ -27,7 +27,9 @@
 如果你想用在书籍需要计算文字的场景，可以使用EBook，如果你想用在其他场景，例如插画，可以使用BookFx，自定义布局。
 
 ## 效果 
+
 **电子书：**
+
 ![image](https://github.com/lixp185/bookfx/blob/main/sl1.gif )
 
 **插画：**
