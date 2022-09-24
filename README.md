@@ -29,11 +29,12 @@
 ## 效果 
 **电子书：**
 
-![img.png](img.gif)
+![image](https://github.com/lixp185/bookfx/blob/master/sl1.gif )
 
 **插画：**
 
-![img_2.png](img_2.gif)
+![image](https://github.com/lixp185/bookfx/blob/master/sl2.gif )
+
 ### 示例代码：
 电子书：
 ```dart
