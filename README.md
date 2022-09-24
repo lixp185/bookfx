@@ -29,12 +29,11 @@
 ## 效果 
 **电子书：**
 
-![Sep-24-2022 16-35-36.gif](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/acee91d9417f46bfb41ecd64bb7fc879~tplv-k3u1fbpfcp-watermark.image?)
+![img.png](img.png)
 
 **插画：**
 
-![Sep-24-2022 16-37-05.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f8344a38fb93475c8719c76039da7d74~tplv-k3u1fbpfcp-watermark.image?)
-
+![img_2.png](img_2.png)
 ### 示例代码：
 电子书：
 ```dart
