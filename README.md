@@ -28,12 +28,11 @@
 
 ## 效果 
 **电子书：**
-
-![image](https://github.com/lixp185/bookfx/blob/master/sl1.gif )
+![image](https://github.com/lixp185/bookfx/blob/main/sl1.gif )
 
 **插画：**
 
-![image](https://github.com/lixp185/bookfx/blob/master/sl2.gif )
+![image](https://github.com/lixp185/bookfx/blob/main/sl2.gif )
 
 ### 示例代码：
 电子书：
