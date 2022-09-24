@@ -128,10 +128,10 @@ class _EBookState extends State<EBook> {
         ? BookFx(
             size: Size(MediaQuery.of(context).size.width, widget.maxHeight),
             pageCount: allPages.length,
-            bColor: Colors.yellow.shade800,
-            nextCallBack: (index) {
-              // nextPage();
-            },
+            currentBgColor: Colors.yellow.shade800,
+            // nextCallBack: (index) {
+            //   // nextPage();
+            // },
             lastCallBack: (index) {
               if (index == 0) {
                 return;
@@ -140,41 +140,14 @@ class _EBookState extends State<EBook> {
             },
             nextPage: (index) {
               /// 下一页
-              return Container(
+
+
+              return index>=allPages.length-1?const SizedBox(): Stack(
+                children: [
+                  Container(
                   width: double.infinity,
                   height: double.infinity,
                   padding: widget.padding,
-                  color: Colors.yellow,
-                  child: Stack(
-                    children: [
-                      Text(
-                        data.isNotEmpty
-                            ? data.substring(
-                                allPages[index], allPages[index + 1])
-                            : "",
-                        maxLines: maxTextHeight ~/ textHeight,
-                        style: TextStyle(
-                            fontSize: fontSize,
-                            // height: 1.5,
-                            color: const Color(0xff333333)),
-                      ),
-                      Positioned(
-                        child: Text("$index"),
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                      )
-                    ],
-                  ));
-            },
-            currentPage: (int index) {
-              /// 当前页 index 页码
-              return Stack(
-                children: [ Container(
-                  padding: widget.padding,
-                  width: double.infinity,
-                  height: double.infinity,
-                  // padding: EdgeInsetsDirectional.all(20),
                   color: Colors.yellow,
                   child: Stack(
                     children: [
@@ -189,15 +162,46 @@ class _EBookState extends State<EBook> {
                             // height: 1.5,
                             color: const Color(0xff333333)),
                       ),
-                      // Text("$index"),
+
                     ],
                   )),
                   Positioned(
-                    child: Text("$index"),
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                  )],
+                    child: Text("${index + 1}"),
+                    bottom: 10,
+                    right: 20,
+                  )
+                ],
+              );
+
+
+            },
+            currentPage: (int index) {
+              /// 当前页 index 页码
+              return Stack(
+                children: [
+                  Container(
+                      padding: widget.padding,
+                      width: double.infinity,
+                      height: double.infinity,
+                      // padding: EdgeInsetsDirectional.all(20),
+                      color: Colors.yellow,
+                      child:   Text(
+                        data.isNotEmpty
+                            ? data.substring(
+                            allPages[index], allPages[index + 1])
+                            : "",
+                        maxLines: maxTextHeight ~/ textHeight,
+                        style: TextStyle(
+                            fontSize: fontSize,
+                            // height: 1.5,
+                            color: const Color(0xff333333)),
+                      ),),
+                  Positioned(
+                    child: Text("${index + 1}"),
+                    bottom: 10,
+                    right: 20,
+                  )
+                ],
               );
             },
             controller: widget.bookController,

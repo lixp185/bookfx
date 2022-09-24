@@ -46,77 +46,111 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  List images = [
+    'assets/aaa.webp',
+    'assets/bbb.webp',
+    'assets/ccc.webp',
+    'assets/ddd.webp',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: const Text(
-          "翻页demo",
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: const Text(
+            "翻页demo",
+          ),
         ),
-      ),
-      body: data.isNotEmpty
-          ? Column(
-              children: [
-                EBook(
-                    maxWith: MediaQuery.of(context).size.width,
-                    eBookController: eBookController,
-                    bookController: bookController,
-                    data: data,
-                    fontSize: eBookController.fontSize,
-                    padding: const EdgeInsetsDirectional.all(15),
-                    maxHeight: MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).padding.top -
-                        56 -
-                        100),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    ElevatedButton(
-                        onPressed: () {
-                          bookController.next();
-                        },
-                        child: Text("下一页")),
-                    ElevatedButton(
-                        onPressed: () {
-                          bookController.last();
-                        },
-                        child: Text("上一页")),
-                    ElevatedButton(
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: Text("提示"),
-                                  content: Container(
-                                      height: 100,
-                                      child: Column(
-                                        children: [
-                                          TextField(
-                                            controller: textEditingController,
-                                            textInputAction: TextInputAction.go,
-                                            keyboardType: TextInputType.number,
-                                          ),
-                                          TextButton(
-                                              onPressed: () {
-                                                int index = int.parse(
-                                                    textEditingController.text);
-                                                bookController.goTo(index);
-                                                Navigator.pop(context);
-                                              },
-                                              child: Text("确定"))
-                                        ],
-                                      )),
-                                );
-                              });
-                        },
-                        child: Text("跳转指定页")),
-                  ],
-                )
-              ],
-            )
-          : const SizedBox(),
-    );
+        body:
+
+        data.isNotEmpty
+            ? Column(
+                children: [
+                  /// 电子书
+                  EBook(
+                      maxWith: MediaQuery.of(context).size.width,
+                      eBookController: eBookController,
+                      bookController: bookController,
+                      data: data,
+                      fontSize: eBookController.fontSize,
+                      padding: const EdgeInsetsDirectional.all(15),
+                      maxHeight:600),
+
+                  /// 自定义
+                  // BookFx(
+                  //     size: Size(MediaQuery.of(context).size.width, 600),
+                  //     pageCount: images.length,
+                  //     currentPage: (index) {
+                  //       return Image.asset(
+                  //         images[index],
+                  //         fit: BoxFit.fill,
+                  //         width: MediaQuery.of(context).size.width,
+                  //       );
+                  //     },
+                  //     lastCallBack: (index) {
+                  //       if (index == 0) {
+                  //         return;
+                  //       }
+                  //       setState(() {});
+                  //     },
+                  //     nextPage: (index) {
+                  //       return Image.asset(
+                  //         images[index],
+                  //         fit: BoxFit.fill,
+                  //         width: MediaQuery.of(context).size.width,
+                  //       );
+                  //     },
+                  //     controller: bookController),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            bookController.next();
+                          },
+                          child: Text("下一页")),
+                      ElevatedButton(
+                          onPressed: () {
+                            bookController.last();
+                          },
+                          child: Text("上一页")),
+                      ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: Text("提示"),
+                                    content: Container(
+                                        height: 100,
+                                        child: Column(
+                                          children: [
+                                            TextField(
+                                              controller: textEditingController,
+                                              textInputAction: TextInputAction.go,
+                                              keyboardType: TextInputType.number,
+                                            ),
+                                            TextButton(
+                                                onPressed: () {
+                                                  int index = int.parse(
+                                                      textEditingController.text);
+                                                  bookController.goTo(index);
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text("确定"))
+                                          ],
+                                        )),
+                                  );
+                                });
+                          },
+                          child: Text("跳转指定页")),
+                    ],
+                  )
+                ],
+              )
+            : const SizedBox(),
+        );
   }
 }

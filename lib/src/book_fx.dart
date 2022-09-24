@@ -25,8 +25,8 @@ class BookFx extends StatefulWidget {
   /// [index] 下一页页码
   final Widget Function(int index) nextPage;
 
-  /// 背面色值
-  final Color? bColor;
+  /// 当前翻页的背面色值
+  final Color? currentBgColor;
 
   /// 书籍页数
   final int pageCount;
@@ -45,7 +45,7 @@ class BookFx extends StatefulWidget {
     required this.size,
     required this.currentPage,
     required this.nextPage,
-    this.bColor,
+    this.currentBgColor,
     this.pageCount = 10000,
     this.nextCallBack,
     this.lastCallBack,
@@ -82,13 +82,16 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
     })
     ..addStatusListener((status) {
       if (status == AnimationStatus.completed) {
+        isAnimation = false;
         if (isNext) {
+
+          // print("翻页2222");
           setState(() {
+            isAlPath = true;
             widget.controller.currentIndex++;
             widget.nextCallBack?.call(widget.controller.currentIndex);
           });
         }
-        isAnimation = false;
       }
       if (status == AnimationStatus.dismissed) {
         //起点停止
@@ -113,46 +116,29 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       }
       if (widget.controller.nextType == 1) {
         /// 下一页
-        isAnimation = true;
-        isNext = true;
-        currentA = Point(size.width - 50, size.height - 50);
-        _controller.forward(
-          from: 0,
-        );
+        if(widget.controller.currentIndex>=widget.pageCount-1){
+          //最后一页了
+          return;
+        }
+     next();
       } else if (widget.controller.nextType == -1) {
         /// 上一页
         if (widget.controller.currentIndex != 0) {
-          setState(() {
-            isAnimation = true;
-            currentA = Point(-200, size.height - 100);
-            widget.controller.currentIndex--;
-            isNext = false;
-            _controller.forward(
-              from: 0,
-            );
-          });
+              last();
           return;
         } else {
           // 首页了
         }
       } else if (widget.controller.nextType == 0) {
         // 跳页
-
-        if (widget.controller.goToIndex == widget.controller.currentIndex) {
+        if (widget.controller.currentIndex == widget.controller.goToIndex - 1 ||
+            widget.controller.goToIndex < 0 ||
+            widget.controller.goToIndex > widget.pageCount-1) {
           return;
-        } else if (widget.controller.goToIndex >
-            widget.controller.currentIndex) {
+        } else {
           setState(() {
-            widget.controller.currentIndex = widget.controller.goToIndex - 2;
+            widget.controller.currentIndex = widget.controller.goToIndex - 1;
           });
-          widget.controller.next();
-        } else if (widget.controller.goToIndex <
-            widget.controller.currentIndex) {
-          setState(() {
-            widget.controller.currentIndex = widget.controller.goToIndex - 2;
-          });
-
-          widget.controller.last();
         }
       }
     });
@@ -165,6 +151,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
   }
 
   bool isNext = true; // 是否翻页到下一页
+  bool isAlPath = true; //
   bool isAnimation = false; // 是否正在执行翻页
   // 控制点类
   final ValueNotifier<PaperPoint> _p =
@@ -185,41 +172,30 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
             // // 当前页
             ClipPath(
               child: widget.currentPage(widget.controller.currentIndex),
-              clipper: CurrentPaperClipPath(_p),
+              clipper:isAlPath?null: CurrentPaperClipPath(_p,isNext),
             ),
+
             CustomPaint(
               size: size,
               painter: _BookPainter(
                 _p,
-                widget.bColor,
+                widget.currentBgColor,
               ),
             ),
-
-            // Positioned(
-            //     bottom: 0,
-            //     child: ElevatedButton(onPressed: () {}, child: Text("上一页")))
           ],
         ),
         onPanDown: (d) {
-          // if (isAnimation) {
-          //   return;
-          // }
-          // if (currentIndex == widget.pageCount - 1) {
-          //   // ToastUtil.show("最后一页了");
-          //   return;
-          // }
-          // isNext = false;
           downPos = d.localPosition;
-          // _p.value = PaperPoint(Point(down.dx, down.dy), size);
+
         },
-        onPanUpdate: widget.controller.currentIndex == widget.pageCount - 1
-            ? null
-            : (d) {
-                if (isAnimation) {
+        onPanUpdate :(d) {
+          if (isAnimation) {
                   return;
                 }
+          if( widget.controller.currentIndex== widget.pageCount - 1){
+            return;
+          }
                 var move = d.localPosition;
-
                 // 临界值取消更新
                 if (move.dx >= size.width ||
                     move.dx < 0 ||
@@ -229,6 +205,11 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
                 }
                 if (downPos.dx < size.width / 2) {
                   return;
+                }
+                if(isAlPath == true){
+                  setState(() {
+                    isAlPath = false;
+                  });
                 }
                 if (downPos.dy > size.height / 3 &&
                     downPos.dy < size.height * 2 / 3) {
@@ -249,9 +230,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
                   isNext = false;
                 }
               },
-        onPanEnd: widget.controller.currentIndex == widget.pageCount - 1
-            ? null
-            : (d) {
+        onPanEnd: (d) {
                 if (isAnimation) {
                   return;
                 }
@@ -261,15 +240,18 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
                     return;
                   }
                   widget.lastCallBack?.call(widget.controller.currentIndex);
-                  isAnimation = true;
-                  currentA = Point(-200, size.height - 100);
-                  widget.controller.currentIndex--;
-                  isNext = false;
-                  _controller.forward(
-                    from: 0,
-                  );
+                  last();
                   return;
                 }
+                ///下一页
+                // print("xxxxxx${widget.controller.currentIndex}  ${widget.pageCount}");
+                ///
+                if( widget.controller.currentIndex == widget.pageCount - 1){
+                  return;
+                }
+                setState(() {
+                  isAlPath = false;
+                });
                 isAnimation = true;
                 _controller.forward(
                   from: 0,
@@ -278,14 +260,40 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       ),
     );
   }
+
+  void last() {
+    setState(() {
+      isAlPath = false;
+      isAnimation = true;
+      currentA = Point(-200, size.height - 100);
+      widget.controller.currentIndex--;
+      isNext = false;
+      _controller.forward(
+        from: 0,
+      );
+    });
+  }
+
+  void next() {
+    setState(() {
+    isAlPath = false;
+    });
+    isAnimation = true;
+    isNext = true;
+    currentA = Point(size.width - 50, size.height - 50);
+    _controller.forward(
+      from: 0,
+    );
+  }
 }
 
 /// 当前页区域
 class CurrentPaperClipPath extends CustomClipper<Path> {
   ValueNotifier<PaperPoint> p;
+  bool isNext;
 
   CurrentPaperClipPath(
-    this.p,
+    this.p,this.isNext
   ) : super(reclip: p);
 
   @override
@@ -296,10 +304,10 @@ class CurrentPaperClipPath extends CustomClipper<Path> {
         center: Offset(size.width / 2, size.height / 2),
         width: size.width,
         height: size.height));
-
     Path mPathA = Path();
+    // 翻页
     if (p.value.a != p.value.f && p.value.a.x > -size.width) {
-      debugPrint("当前页 ${p.value.a}  ${p.value.f}");
+      // debugPrint("当前页 ${p.value.a}  ${p.value.f}");
       mPathA.moveTo(p.value.c.x, p.value.c.y);
       mPathA.quadraticBezierTo(
           p.value.e.x, p.value.e.y, p.value.b.x, p.value.b.y);
@@ -309,12 +317,24 @@ class CurrentPaperClipPath extends CustomClipper<Path> {
           p.value.h.x, p.value.h.y, p.value.j.x, p.value.j.y);
       mPathA.lineTo(p.value.f.x, p.value.f.y);
       mPathA.close();
+      // try{
       Path mPathC =
           Path.combine(PathOperation.reverseDifference, mPathA, mPath);
       return mPathC;
-    }
+      // }catch(e){
+      //   return Path();
+      // }
 
-    return mPath;
+    } else {
+      // 全区域 Path
+      if(isNext){
+        return Path();
+      }else{
+        return mPath;
+      }
+      }
+
+
   }
 
   @override
@@ -401,10 +421,10 @@ class _BookPainter extends CustomPainter {
 
           double mE1 = (p.value.a.x - p.value.p2.x);
           double nE1 = (p.value.a.y - p.value.p2.y); // 负数
-          debugPrint("p1x = $m1");
-          debugPrint("p1y = $n1");
-          debugPrint("p2x = $mE1");
-          debugPrint("p2y = $nE1");
+          // debugPrint("p1x = $m1");
+          // debugPrint("p1y = $n1");
+          // debugPrint("p2x = $mE1");
+          // debugPrint("p2y = $nE1");
 
           var twoPoint = PaperPoint.toTwoPoint(
               Point(p.value.b.x - m1, p.value.b.y - n1),
@@ -608,7 +628,7 @@ class PaperPoint {
     //每个点的计算公式
     // f = Point(size.width / 2, size.height / 2);
     f = Point(size.width, size.height);
-    debugPrint("af  ${a.y}  ${f.y}");
+    // debugPrint("af  ${a.y}  ${f.y}");
     // if (a.y == f.y) {
     //   print("xiangdeng l");
     //   return;
@@ -616,7 +636,7 @@ class PaperPoint {
     g = Point((a.x + f.x) / 2, (a.y + f.y) / 2);
     e = Point(g.x - (pow(f.y - g.y, 2) / (f.x - g.x)), f.y);
     double cx = e.x - (f.x - e.x) / 2;
-    debugPrint("g  $g e $e");
+    // debugPrint("g  $g e $e");
     if (a.x > 0) {
       if (cx <= 0) {
         //   // 临界点
@@ -634,7 +654,7 @@ class PaperPoint {
     }
 
     c = Point(cx, f.y);
-    debugPrint("cccccc$c");
+    // debugPrint("cccccc$c");
     h = Point(f.x, g.y - (pow((f - g).x, 2) / (f.y - g.y)));
 
     j = Point(f.x, h.y - (f.y - h.y) / 2);
