@@ -29,11 +29,11 @@
 ## 效果 
 **电子书：**
 
-![img.png](img.png)
+![img.png](img.gif)
 
 **插画：**
 
-![img_2.png](img_2.png)
+![img_2.png](img_2.gif)
 ### 示例代码：
 电子书：
 ```dart
