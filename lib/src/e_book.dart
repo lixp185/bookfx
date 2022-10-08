@@ -17,7 +17,11 @@ class EBook extends StatefulWidget {
   // 书籍内容
   final String data;
 
+  // 字号
   final double fontSize;
+
+  // 段落间距
+  final double fontHeight;
 
   //书籍边距
   final EdgeInsetsGeometry padding;
@@ -32,7 +36,8 @@ class EBook extends StatefulWidget {
       this.fontSize = 16.0,
       this.padding = const EdgeInsetsDirectional.all(15),
       this.eBookController,
-      required this.bookController})
+      required this.bookController,
+      this.fontHeight = 1.4})
       : super(key: key);
 
   @override
@@ -56,6 +61,7 @@ class _EBookState extends State<EBook> {
         text: TextSpan(
             text: value,
             style: TextStyle(
+              height: widget.fontHeight,
               // fontWeight: fontWeight,
               fontSize: fontSize,
             )));
@@ -82,19 +88,6 @@ class _EBookState extends State<EBook> {
     maxTextHeight =
         ((widget.maxHeight - widget.padding.vertical) ~/ textHeight) *
             textHeight;
-    // nextPage();
-    // print("textHeight :$textHeight");
-    // print("maxTextHeight :$maxTextHeight");
-    // //  todo  文字高度有误
-    // String aa = data.substring(40226, 40474);
-    // String aa2 = data.substring(35319, 35548);
-    //
-    // double h = calculateTextHeight(aa, fontSize);
-    // double h2 = calculateTextHeight(aa2, fontSize);
-    // print(" test heigh  $h");
-    // print(" test heigh  $h2");
-    // print(" test   ${data[665]}");
-
     widget.eBookController?.addListener(() {
       /// 改变字号
       fontSize = widget.eBookController?.fontSize ?? 18;
@@ -140,64 +133,62 @@ class _EBookState extends State<EBook> {
             },
             nextPage: (index) {
               /// 下一页
-
-
-              return index>=allPages.length-1?const SizedBox(): Stack(
-                children: [
-                  Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  padding: widget.padding,
-                  color: Colors.yellow,
-                  child: Stack(
-                    children: [
-                      Text(
-                        data.isNotEmpty
-                            ? data.substring(
-                            allPages[index], allPages[index + 1])
-                            : "",
-                        maxLines: maxTextHeight ~/ textHeight,
-                        style: TextStyle(
-                            fontSize: fontSize,
-                            // height: 1.5,
-                            color: const Color(0xff333333)),
-                      ),
-
-                    ],
-                  )),
-                  Positioned(
-                    child: Text("${index + 1}"),
-                    bottom: 10,
-                    right: 20,
-                  )
-                ],
-              );
-
-
+              return index >= allPages.length - 1
+                  ? const SizedBox()
+                  : Stack(
+                      children: [
+                        Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            padding: widget.padding,
+                            color: Colors.yellow,
+                            child: Stack(
+                              children: [
+                                Text(
+                                  data.isNotEmpty
+                                      ? data.substring(
+                                          allPages[index], allPages[index + 1])
+                                      : "",
+                                  maxLines: maxTextHeight ~/ textHeight,
+                                  style: TextStyle(
+                                      height: widget.fontHeight,
+                                      fontSize: fontSize,
+                                      // height: 1.5,
+                                      color: const Color(0xff333333)),
+                                ),
+                              ],
+                            )),
+                        Positioned(
+                          child: Text("${index + 1}/${allPages.length - 1}"),
+                          bottom: 10,
+                          right: 20,
+                        )
+                      ],
+                    );
             },
             currentPage: (int index) {
               /// 当前页 index 页码
               return Stack(
                 children: [
                   Container(
-                      padding: widget.padding,
-                      width: double.infinity,
-                      height: double.infinity,
-                      // padding: EdgeInsetsDirectional.all(20),
-                      color: Colors.yellow,
-                      child:   Text(
-                        data.isNotEmpty
-                            ? data.substring(
-                            allPages[index], allPages[index + 1])
-                            : "",
-                        maxLines: maxTextHeight ~/ textHeight,
-                        style: TextStyle(
-                            fontSize: fontSize,
-                            // height: 1.5,
-                            color: const Color(0xff333333)),
-                      ),),
+                    padding: widget.padding,
+                    width: double.infinity,
+                    height: double.infinity,
+                    // padding: EdgeInsetsDirectional.all(20),
+                    color: Colors.yellow,
+                    child: Text(
+                      data.isNotEmpty
+                          ? data.substring(allPages[index], allPages[index + 1])
+                          : "",
+                      maxLines: maxTextHeight ~/ textHeight,
+                      style: TextStyle(
+                          fontSize: fontSize,
+                          height: widget.fontHeight,
+                          color: const Color(0xff333333)),
+                    ),
+                  ),
                   Positioned(
-                    child: Text("${index + 1}"),
+                    child: Text("${index + 1}/${allPages.length - 1}"),
                     bottom: 10,
                     right: 20,
                   )
@@ -274,8 +265,6 @@ class _EBookState extends State<EBook> {
 
               left = index;
               right = index + 1000;
-              // print("查找 $index");
-              // print("查找right $right");
               if (index < data.length - 3 &&
                   data.substring(index, index + 3).startsWith(''
                       '\n')) {
@@ -296,88 +285,4 @@ class _EBookState extends State<EBook> {
       }
     });
   }
-
-// 更改页码数据
-//   void nextPage() {
-//     /// 下一页
-//     for (int i = nextStartPos; i < data.length; i += 20) {
-//       if (i >= data.length - 1) {
-//         return;
-//       }
-//       if (calculateTextHeight(data.substring(nextStartPos, i), fontSize) >
-//           maxTextHeight) {
-//         /// 大于最大行数 去掉\r 回车 不然导致计算高度有误差
-//         for (int j = i; j > 0; j--) {
-//           if (calculateTextHeight(data.substring(nextStartPos, j), fontSize) >
-//                   maxTextHeight &&
-//               calculateTextHeight(
-//                       data.substring(nextStartPos, j - 1), fontSize) <=
-//                   maxTextHeight) {
-//             currentStartPos = nextStartPos;
-//             nextStartPos = j - 1;
-//             print("current next $currentStartPos");
-//             print("nextStartPos next  $nextStartPos");
-//             return;
-//           }
-//         }
-//       }
-//     }
-//   }
-
-// recountPage() {
-//   /// 重新计算当前页角标
-//   for (int i = currentStartPos; i < data.length; i += 20) {
-//     if (i >= data.length - 1) {
-//       return;
-//     }
-//     if (calculateTextHeight(data.substring(currentStartPos, i), fontSize) >
-//         maxTextHeight) {
-//       /// 大于最大行数 去掉\r 回车 不然导致计算高度有误差
-//       for (int j = i; j > 0; j--) {
-//         if (calculateTextHeight(
-//                     data.substring(currentStartPos, j), fontSize) >
-//                 maxTextHeight &&
-//             calculateTextHeight(
-//                     data.substring(currentStartPos, j - 1), fontSize) <=
-//                 maxTextHeight) {
-//           nextStartPos = j - 1;
-//           return;
-//         }
-//       }
-//     }
-//   }
-// }
-
-  /// 因为上一页
-// lastPage() {
-//   /// 上一页 前面为 \n
-//   for (int i = currentStartPos - 20; i < data.length; i -= 20) {
-//     if (i <= 0) {
-//       nextStartPos = currentStartPos;
-//       currentStartPos = 0;
-//       return;
-//     }
-//     double h =
-//         calculateTextHeight(data.substring(i, currentStartPos), fontSize);
-//     if (h > maxTextHeight) {
-//       for (int j = i; j < currentStartPos; j++) {
-//         // 若当前
-//         if (calculateTextHeight(
-//                     data.substring(j, currentStartPos), fontSize) >
-//                 maxTextHeight &&
-//             calculateTextHeight(
-//                     data.substring(j + 1, currentStartPos), fontSize) <=
-//                 maxTextHeight) {
-//           nextStartPos = currentStartPos;
-//           currentStartPos = j + 1;
-//
-//           print("current $currentStartPos");
-//           print("nextStartPos $nextStartPos");
-//
-//           return;
-//         }
-//       }
-//     }
-//   }
-// }
 }

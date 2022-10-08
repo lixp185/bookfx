@@ -192,7 +192,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           if (isAnimation) {
                   return;
                 }
-          if( widget.controller.currentIndex== widget.pageCount - 1){
+          if( widget.controller.currentIndex== widget.pageCount - 2){
             return;
           }
                 var move = d.localPosition;
@@ -246,7 +246,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
                 ///下一页
                 // print("xxxxxx${widget.controller.currentIndex}  ${widget.pageCount}");
                 ///
-                if( widget.controller.currentIndex == widget.pageCount - 1){
+                if( widget.controller.currentIndex == widget.pageCount - 2){
                   return;
                 }
                 setState(() {

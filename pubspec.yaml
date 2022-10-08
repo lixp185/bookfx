@@ -1,7 +1,8 @@
 name: bookfx
 description: 一个Flutter模拟的书籍翻页效果
 version: 0.0.1
-homepage:
+homepage: https://github.com/lixp185/bookfx
+repository: https://github.com/lixp185/bookfx
 
 environment:
   sdk: ">=2.15.1 <3.0.0"
