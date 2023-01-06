@@ -32,6 +32,8 @@ class _CustomWidgetState extends State<CustomWidget> {
               images[index],
               fit: BoxFit.fill,
               width: MediaQuery.of(context).size.width,
+              height: double.infinity,
+
             );
           },
           lastCallBack: (index) {
@@ -45,6 +47,7 @@ class _CustomWidgetState extends State<CustomWidget> {
               images[index],
               fit: BoxFit.fill,
               width: MediaQuery.of(context).size.width,
+              height: double.infinity,
             );
           },
           controller: bookController),
