@@ -1,15 +1,17 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../bookfx.dart';
+import 'utils/text.dart';
 
 /// 作者： lixp
 /// 创建时间： 2022/9/14 13:44
 /// 类介绍：txt电子书模拟手势翻页
 class EBook extends StatefulWidget {
   // 书籍宽度
-  final double maxWith;
+  final double maxWidth;
 
   // 书籍高度
   final double maxHeight;
@@ -27,17 +29,19 @@ class EBook extends StatefulWidget {
   final EdgeInsetsGeometry padding;
   final EBookController? eBookController;
   final BookController bookController;
+  final Duration? duration;
 
   const EBook(
       {Key? key,
-      required this.maxWith,
+      required this.maxWidth,
       required this.data,
       required this.maxHeight,
       this.fontSize = 16.0,
-      this.padding = const EdgeInsetsDirectional.all(15),
+      this.padding = const EdgeInsetsDirectional.all(20),
       this.eBookController,
       required this.bookController,
-      this.fontHeight = 1.4})
+      this.fontHeight = 1.4,
+      this.duration})
       : super(key: key);
 
   @override
@@ -47,90 +51,80 @@ class EBook extends StatefulWidget {
 class _EBookState extends State<EBook> {
   String data = """""";
   double textHeight = 10;
-  double fontSize = 26;
-
-  /// 获取文字高度
-  double calculateTextHeight(
-    String value,
-    double fontSize,
-  ) {
-    TextPainter painter = TextPainter(
-        locale: WidgetsBinding.instance.window.locale,
-        textDirection: TextDirection.ltr,
-        maxLines: 1000,
-        text: TextSpan(
-            text: value,
-            style: TextStyle(
-              height: widget.fontHeight,
-              // fontWeight: fontWeight,
-              fontSize: fontSize,
-            )));
-    painter.layout(maxWidth: widget.maxWith - widget.padding.horizontal);
-
-    return painter.size.height;
-  }
-
   int currentStartPos = 0; // 当前页起始文字位置角标
   int nextStartPos = 0; // 下一页起始文字位置角标
-  double maxTextHeight = 0;
+  double maxTextHeight = 0; // 文字区域最大高度
   bool isOver = false;
 
   @override
   void initState() {
     super.initState();
 
-    /// 文本区域高度 \r\n 计算有误 ... 高度有误
-    data = widget.data.replaceAll('\r\n', '\n');
-    fontSize = widget.fontSize;
-    textHeight = calculateTextHeight('疯', fontSize);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      /// 文本区域高度 \r\n 计算有误 ... 高度有误
+      data = widget.data.replaceAll('\r\n', '\n');
 
-    /// 文本最大高度 648
-    maxTextHeight =
-        ((widget.maxHeight - widget.padding.vertical) ~/ textHeight) *
-            textHeight;
-    widget.eBookController?.addListener(() {
-      /// 改变字号
-      fontSize = widget.eBookController?.fontSize ?? 18;
-      textHeight = calculateTextHeight('疯', fontSize);
+      // print('fontSize $fontSize');
+      textHeight = TextUtil.calculateTextHeight('发发发...', widget.fontSize,
+          fontHeight: widget.fontHeight,
+          maxWidth: widget.maxWidth,
+          padding: widget.padding);
 
       /// 文本最大高度 648
-      maxTextHeight = (widget.maxHeight ~/ textHeight) * textHeight;
-      isOver = false;
+      maxTextHeight =
+          ((widget.maxHeight - widget.padding.vertical) ~/ textHeight) *
+              textHeight;
+
+      print('textHeight${textHeight}');
+      print('maxTextHeight${maxTextHeight}');
+      // print(
+      //     'calculateTextHeight${calculateTextHeight(data.substring(0, 140), fontSize)}');
+      // print('data index ${data.substring(0, 440)}');
+
+      // widget.eBookController?.addListener(() {
+      //   /// 改变字号
+      //   fontSize = widget.eBookController?.fontSize ?? 18;
+      //   textHeight = calculateTextHeight('疯', fontSize,
+      //       fontHeight: widget.fontHeight,
+      //       maxWidth: widget.maxWidth,
+      //       padding: widget.padding);
+      //
+      //   /// 文本最大高度 648
+      //   maxTextHeight = (widget.maxHeight ~/ textHeight) * textHeight;
+      //   isOver = false;
 
       /// 获取书籍所有页码
-      loadPages().then((value) {
-        print("字号$fontSize");
-        setState(() {});
-      });
-    });
+      // loadPages().then((value) {
+      //   // print("字号$fontSize");
+      //   setState(() {});
+      // });
+      // });
 
-    /// 获取书籍所有页码
-    loadPages();
+      /// 获取书籍所有页码
+      loadPages();
+    });
   }
 
   @override
   void dispose() {
-    widget.eBookController?.removeListener(() {});
+    // widget.eBookController?.removeListener(() {});
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    print("build book");
     return isOver
         ? BookFx(
             size: Size(MediaQuery.of(context).size.width, widget.maxHeight),
-            pageCount: allPages.length,
+            pageCount: allPages.length - 1,
             currentBgColor: Colors.yellow.shade800,
-            // nextCallBack: (index) {
-            //   // nextPage();
-            // },
-            lastCallBack: (index) {
-              if (index == 0) {
-                return;
-              }
-              setState(() {});
+            nextCallBack: (index) {
+              debugPrint('下一页  $index');
             },
+            lastCallBack: (index) {
+              debugPrint('上一页  $index');
+            },
+            duration: widget.duration,
             nextPage: (index) {
               /// 下一页
               return index >= allPages.length - 1
@@ -150,23 +144,29 @@ class _EBookState extends State<EBook> {
                                           allPages[index], allPages[index + 1])
                                       : "",
                                   maxLines: maxTextHeight ~/ textHeight,
+                                  strutStyle: StrutStyle(
+                                    forceStrutHeight: true,
+                                    height: widget.fontHeight,
+                                    fontSize: widget.fontSize,
+                                  ),
                                   style: TextStyle(
                                       height: widget.fontHeight,
-                                      fontSize: fontSize,
-                                      // height: 1.5,
+                                      fontSize: widget.fontSize,
                                       color: const Color(0xff333333)),
                                 ),
                               ],
                             )),
                         Positioned(
                           child: Text("${index + 1}/${allPages.length - 1}"),
-                          bottom: 10,
+                          bottom: 5,
                           right: 20,
                         )
                       ],
                     );
             },
             currentPage: (int index) {
+              print('当前哦index $index ${allPages[index]}');
+
               /// 当前页 index 页码
               return Stack(
                 children: [
@@ -174,22 +174,26 @@ class _EBookState extends State<EBook> {
                     padding: widget.padding,
                     width: double.infinity,
                     height: double.infinity,
-                    // padding: EdgeInsetsDirectional.all(20),
                     color: Colors.yellow,
                     child: Text(
                       data.isNotEmpty
                           ? data.substring(allPages[index], allPages[index + 1])
                           : "",
                       maxLines: maxTextHeight ~/ textHeight,
+                      strutStyle: StrutStyle(
+                        forceStrutHeight: true,
+                        height: widget.fontHeight,
+                        fontSize: widget.fontSize,
+                      ),
                       style: TextStyle(
-                          fontSize: fontSize,
+                          fontSize: widget.fontSize,
                           height: widget.fontHeight,
                           color: const Color(0xff333333)),
                     ),
                   ),
                   Positioned(
                     child: Text("${index + 1}/${allPages.length - 1}"),
-                    bottom: 10,
+                    bottom: 5,
                     right: 20,
                   )
                 ],
@@ -197,39 +201,31 @@ class _EBookState extends State<EBook> {
             },
             controller: widget.bookController,
           )
-        : const Center(
-            child: Text(
-              "加载中...",
-              style: TextStyle(color: Colors.black, fontSize: 20),
-            ),
-          );
+        : const CupertinoActivityIndicator();
   }
 
-  List allPages = [];
-
-  int binarySearch(List<int> nums, int target) {
-    int left = 0;
-    int right = nums.length - 1; // 全文
-
-    while (left <= right) {
-      int mid = (right + left) ~/ 2;
-      if (nums[mid] == target) {
-        print("查找 $mid");
-        return mid;
-      } else if (nums[mid] < target) {
-        left = mid + 1;
-      } else if (nums[mid] > target) {
-        right = mid - 1;
-      } // 注意
-    }
-    return -1;
-  }
+  List<int> allPages = [];
 
   /// 每页最多1000字计算
   Future loadPages() async {
     allPages.clear();
-    print("开始${DateTime.now()}");
+    debugPrint("开始${DateTime.now()}");
+    var request = TaskRequest(data, widget.fontSize, widget.fontHeight,
+        widget.maxWidth, widget.padding, maxTextHeight);
+    debugPrint('r ${request.fontSize}');
+    debugPrint('r ${request.fontHeight}');
+
+    // TaskResult result = await compute<TaskRequest, TaskResult>(
+    //     _doTaskPageIndex,
+    //     TaskRequest(data, widget.fontSize, widget.fontSize, widget.maxWidth,
+    //         widget.padding, maxTextHeight),
+    //     debugLabel: 'w');
+    // setState(() {
+    //   allPages.addAll(result.result);
+    // });
+
     return await Future(() {
+      List<int> allPages = [];
       int num = 0;
       int index = 0;
       allPages.add(index);
@@ -237,52 +233,183 @@ class _EBookState extends State<EBook> {
       int right = 1000;
       while (true) {
         num++;
-        if (right >= data.length) {
-          right = data.length;
-          print("结尾");
-          if (calculateTextHeight(data.substring(left, right), fontSize) <=
-              maxTextHeight) {
-            allPages.add(left);
-            print("结束");
-            print("allPages ${allPages.toString()}");
-
-            print("结束${DateTime.now()}");
-            print("结束循环次数$num");
-            setState(() {
-              isOver = true;
-            });
-            return;
-          }
+        if (right >= request.data.length) {
+          right = request.data.length;
+          // debugPrint("结尾 left$left  right$right");
+          // if (TextUtil.calculateTextHeight(
+          //     request.data.substring(left, right), request.fontSize,
+          //     fontHeight: request.fontHeight,
+          //     maxWidth: request.maxWidth,
+          //     padding: request.padding) <= request.maxTextHeight) {
+          //   allPages.add(left);
+          //   debugPrint("结束");
+          //   debugPrint("allPages ${allPages.toString()}");
+          //   debugPrint("结束${DateTime.now()}");
+          //   debugPrint("结束循环次数$num");
+          //   TaskResult result = TaskResult(cost: 200, result: allPages);
+          //   setState(() {
+          //     this.allPages.addAll(result.result);
+          //     isOver = true;
+          //   });
+          //   return result;
+          // }
         }
+
         int mid = (left + right) ~/ 2;
-        if (calculateTextHeight(data.substring(index, mid), fontSize) ==
-            maxTextHeight) {
+        if (TextUtil.calculateTextHeight(
+                request.data.substring(index, mid), request.fontSize,
+                fontHeight: request.fontHeight,
+                maxWidth: request.maxWidth,
+                padding: request.padding) ==
+            request.maxTextHeight) {
           for (int i = 0; i < 100; i++) {
             num++;
-            if (calculateTextHeight(data.substring(index, mid + i), fontSize) >
-                maxTextHeight) {
+            if (TextUtil.calculateTextHeight(
+                    request.data.substring(index, mid + i), request.fontSize,
+                    fontHeight: request.fontHeight,
+                    maxWidth: request.maxWidth,
+                    padding: request.padding) >
+                request.maxTextHeight) {
               index = mid + i - 1;
-
               left = index;
               right = index + 1000;
-              if (index < data.length - 3 &&
-                  data.substring(index, index + 3).startsWith(''
+              if (index < request.data.length - 3 &&
+                  request.data.substring(index, index + 3).startsWith(''
                       '\n')) {
                 index += 2;
               }
               allPages.add(index);
-
               break;
             }
           }
-        } else if (calculateTextHeight(data.substring(index, mid), fontSize) <
-            maxTextHeight) {
+        } else if (TextUtil.calculateTextHeight(
+                request.data.substring(index, mid), request.fontSize,
+                fontHeight: request.fontHeight,
+                maxWidth: request.maxWidth,
+                padding: request.padding) <
+            request.maxTextHeight) {
+          if (mid >= data.length - 1) {
+            allPages.add(mid);
+            TaskResult result = TaskResult(cost: 200, result: allPages);
+            setState(() {
+              this.allPages.addAll(result.result);
+              isOver = true;
+            });
+            debugPrint("结束");
+            debugPrint("allPages ${allPages.toString()}");
+            debugPrint("结束${DateTime.now()}");
+            debugPrint("结束循环次数$num");
+            return result;
+          }
           left = mid + 1;
-        } else if (calculateTextHeight(data.substring(index, mid), fontSize) >
-            maxTextHeight) {
+        } else if (TextUtil.calculateTextHeight(
+                request.data.substring(index, mid), request.fontSize,
+                fontHeight: request.fontHeight,
+                maxWidth: request.maxWidth,
+                padding: request.padding) >
+            request.maxTextHeight) {
           right = mid - 1;
         }
       }
     });
   }
+
+  static Future<TaskResult> _doTaskPageIndex(TaskRequest request) async {
+    List<int> allPages = [];
+    int num = 0;
+    int index = 0;
+    allPages.add(index);
+    int left = index;
+    int right = 1000;
+    while (true) {
+      num++;
+      if (right >= request.data.length) {
+        right = request.data.length;
+        debugPrint("结尾 ");
+        if (TextUtil.calculateTextHeight(
+                request.data.substring(left, right), request.fontSize,
+                fontHeight: request.fontHeight,
+                maxWidth: request.maxWidth,
+                padding: request.padding) <=
+            request.maxTextHeight) {
+          allPages.add(left);
+          debugPrint("结束");
+          debugPrint("allPages ${allPages.toString()}");
+          debugPrint("结束${DateTime.now()}");
+          debugPrint("结束循环次数$num");
+          TaskResult result = TaskResult(cost: 200, result: allPages);
+          return result;
+        }
+      }
+      int mid = (left + right) ~/ 2;
+      if (TextUtil.calculateTextHeight(
+              request.data.substring(index, mid), request.fontSize,
+              fontHeight: request.fontHeight,
+              maxWidth: request.maxWidth,
+              padding: request.padding) ==
+          request.maxTextHeight) {
+        for (int i = 0; i < 100; i++) {
+          num++;
+          if (TextUtil.calculateTextHeight(
+                  request.data.substring(index, mid + i), request.fontSize,
+                  fontHeight: request.fontHeight,
+                  maxWidth: request.maxWidth,
+                  padding: request.padding) >
+              request.maxTextHeight) {
+            index = mid + i - 1;
+            left = index;
+            right = index + 1000;
+            if (index < request.data.length - 3 &&
+                request.data.substring(index, index + 3).startsWith(''
+                    '\n')) {
+              index += 2;
+            }
+            allPages.add(index);
+
+            break;
+          }
+        }
+      } else if (TextUtil.calculateTextHeight(
+              request.data.substring(index, mid), request.fontSize,
+              fontHeight: request.fontHeight,
+              maxWidth: request.maxWidth,
+              padding: request.padding) <
+          request.maxTextHeight) {
+        debugPrint('left $left');
+        left = mid + 1;
+      } else if (TextUtil.calculateTextHeight(
+              request.data.substring(index, mid), request.fontSize,
+              fontHeight: request.fontHeight,
+              maxWidth: request.maxWidth,
+              padding: request.padding) >
+          request.maxTextHeight) {
+        right = mid - 1;
+      }
+    }
+  }
+}
+
+class TaskRequest {
+  final String data;
+  final double fontSize;
+  final double fontHeight;
+  final double maxWidth;
+  final double maxTextHeight;
+  final EdgeInsetsGeometry padding;
+
+  TaskRequest(
+    this.data,
+    this.fontSize,
+    this.fontHeight,
+    this.maxWidth,
+    this.padding,
+    this.maxTextHeight,
+  );
+}
+
+class TaskResult {
+  final int cost;
+  final List<int> result;
+
+  TaskResult({required this.cost, required this.result});
 }

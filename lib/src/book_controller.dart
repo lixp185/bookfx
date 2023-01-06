@@ -12,7 +12,7 @@ class BookController extends ChangeNotifier {
   }
 
   /// 下一页
-  next() {
+   next() {
     nextType = 1;
     notifyListeners();
   }
