@@ -60,50 +60,54 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
   late Size size = widget.size;
   late Offset downPos;
   Point<double> currentA = const Point(0, 0);
-  late final AnimationController _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration ?? const Duration(milliseconds: 800))
-    ..addListener(() {
-      if (isNext) {
-        /// 翻页
-        _p.value = PaperPoint(
-            Point(currentA.x - (currentA.x + size.width) * _controller.value,
-                currentA.y + (size.height - currentA.y) * _controller.value),
-            size);
-      } else {
-        /// 不翻页 回到原始位置
-        _p.value = PaperPoint(
-            Point(
-              currentA.x + (size.width - currentA.x) * _controller.value,
-              currentA.y + (size.height - currentA.y) * _controller.value,
-            ),
-            size);
-      }
-    })
-    ..addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        isAnimation = false;
-        if (isNext) {
 
-          // print("翻页2222");
-          setState(() {
-            isAlPath = true;
-            widget.controller.currentIndex++;
-            widget.nextCallBack?.call(widget.controller.currentIndex);
-          });
-        }
-      }
-      if (status == AnimationStatus.dismissed) {
-        //起点停止
-        // print("起点停止");
-      }
-    });
+  AnimationController? _controller;
 
   // 当前页面
 
   @override
   void initState() {
     super.initState();
+
+  _controller = AnimationController(
+        vsync: this,
+        duration: widget.duration ?? const Duration(milliseconds: 800));
+    _controller?.addListener(() {
+
+        if (isNext) {
+          /// 翻页
+          _p.value = PaperPoint(
+              Point(currentA.x - (currentA.x + size.width) * _controller!.value,
+                  currentA.y + (size.height - currentA.y) * _controller!.value),
+              size);
+        } else {
+          /// 不翻页 回到原始位置
+          _p.value = PaperPoint(
+              Point(
+                currentA.x + (size.width - currentA.x) * _controller!.value,
+                currentA.y + (size.height - currentA.y) * _controller!.value,
+              ),
+              size);
+        }
+      });
+      _controller?.addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          isAnimation = false;
+          if (isNext) {
+            // print("翻页2222");
+            setState(() {
+              isAlPath = true;
+              widget.controller.currentIndex++;
+              widget.nextCallBack?.call(widget.controller.currentIndex + 1);
+            });
+          }
+        }
+        if (status == AnimationStatus.dismissed) {
+          //起点停止
+          // print("起点停止");
+        }
+      });
+
     // build完毕初始化首页
     // 当前页码
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -116,24 +120,28 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       }
       if (widget.controller.nextType == 1) {
         /// 下一页
-        if(widget.controller.currentIndex>=widget.pageCount-1){
+        /// 当前页currentIndex是角标索引 0开始 页码是从 1开始的
+        if (widget.controller.currentIndex >= widget.pageCount - 1) {
           //最后一页了
+          widget.nextCallBack?.call(widget.pageCount);
           return;
         }
-     next();
+        next();
       } else if (widget.controller.nextType == -1) {
         /// 上一页
         if (widget.controller.currentIndex != 0) {
-              last();
+          last();
           return;
         } else {
           // 首页了
+          widget.lastCallBack?.call(widget.controller.currentIndex);
         }
       } else if (widget.controller.nextType == 0) {
         // 跳页
+        // 当前页 = 跳转页  || 当前页<0 || 当前页>页码
         if (widget.controller.currentIndex == widget.controller.goToIndex - 1 ||
             widget.controller.goToIndex < 0 ||
-            widget.controller.goToIndex > widget.pageCount-1) {
+            widget.controller.goToIndex > widget.pageCount) {
           return;
         } else {
           setState(() {
@@ -146,7 +154,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -172,7 +180,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
             // // 当前页
             ClipPath(
               child: widget.currentPage(widget.controller.currentIndex),
-              clipper:isAlPath?null: CurrentPaperClipPath(_p,isNext),
+              clipper: isAlPath ? null : CurrentPaperClipPath(_p, isNext),
             ),
 
             CustomPaint(
@@ -186,77 +194,78 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
         ),
         onPanDown: (d) {
           downPos = d.localPosition;
-
         },
-        onPanUpdate :(d) {
+        onPanUpdate: (d) {
           if (isAnimation) {
-                  return;
-                }
-          if( widget.controller.currentIndex== widget.pageCount - 1){
             return;
           }
-                var move = d.localPosition;
-                // 临界值取消更新
-                if (move.dx >= size.width ||
-                    move.dx < 0 ||
-                    move.dy >= size.height ||
-                    move.dy < 0) {
-                  return;
-                }
-                if (downPos.dx < size.width / 2) {
-                  return;
-                }
-                if(isAlPath == true){
-                  setState(() {
-                    isAlPath = false;
-                  });
-                }
-                if (downPos.dy > size.height / 3 &&
-                    downPos.dy < size.height * 2 / 3) {
-                  // 横向翻页
-                  currentA = Point(move.dx, size.height - 1);
-                  _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
-                } else {
-                  // 右下角翻页
-                  currentA = Point(move.dx, move.dy);
-                  _p.value = PaperPoint(Point(move.dx, move.dy), size);
-                }
-                // currentA = Point(move.dx, size.height - 1);
-                // _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+          if (widget.controller.currentIndex == widget.pageCount - 1) {
+            return;
+          }
+          var move = d.localPosition;
+          // 临界值取消更新
+          if (move.dx >= size.width ||
+              move.dx < 0 ||
+              move.dy >= size.height ||
+              move.dy < 0) {
+            return;
+          }
+          if (downPos.dx < size.width / 2) {
+            return;
+          }
+          if (isAlPath == true) {
+            setState(() {
+              isAlPath = false;
+            });
+          }
+          if (downPos.dy > size.height / 3 &&
+              downPos.dy < size.height * 2 / 3) {
+            // 横向翻页
+            currentA = Point(move.dx, size.height - 1);
+            _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+          } else {
+            // 右下角翻页
+            currentA = Point(move.dx, move.dy);
+            _p.value = PaperPoint(Point(move.dx, move.dy), size);
+          }
+          // currentA = Point(move.dx, size.height - 1);
+          // _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
 
-                if ((size.width - move.dx) / size.width > 1 / 3) {
-                  isNext = true;
-                } else {
-                  isNext = false;
-                }
-              },
+          if ((size.width - move.dx) / size.width > 1 / 3) {
+            isNext = true;
+          } else {
+            isNext = false;
+          }
+        },
         onPanEnd: (d) {
-                if (isAnimation) {
-                  return;
-                }
-                if (downPos.dx < size.width / 2) {
-                  if (widget.controller.currentIndex == 0) {
-                    widget.lastCallBack?.call(widget.controller.currentIndex);
-                    return;
-                  }
-                  widget.lastCallBack?.call(widget.controller.currentIndex);
-                  last();
-                  return;
-                }
-                ///下一页
-                // print("xxxxxx${widget.controller.currentIndex}  ${widget.pageCount}");
-                ///
-                if( widget.controller.currentIndex == widget.pageCount - 1){
-                  return;
-                }
-                setState(() {
-                  isAlPath = false;
-                });
-                isAnimation = true;
-                _controller.forward(
-                  from: 0,
-                );
-              },
+          if (isAnimation) {
+            return;
+          }
+
+          /// 手指首次触摸屏幕左侧区域
+          if (downPos.dx < size.width / 2) {
+            if (widget.controller.currentIndex == 0) {
+              widget.lastCallBack?.call(widget.controller.currentIndex);
+              return;
+            }
+            widget.lastCallBack?.call(widget.controller.currentIndex);
+            last();
+            return;
+          }
+
+          ///下一页
+          if (widget.controller.currentIndex == widget.pageCount - 1) {
+            widget.nextCallBack?.call(widget.pageCount);
+            return;
+          }
+          setState(() {
+            isAlPath = false;
+          });
+          isAnimation = true;
+          _controller?.forward(
+            from: 0,
+          );
+        },
       ),
     );
   }
@@ -268,7 +277,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       currentA = Point(-200, size.height - 100);
       widget.controller.currentIndex--;
       isNext = false;
-      _controller.forward(
+      _controller?.forward(
         from: 0,
       );
     });
@@ -276,12 +285,12 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
 
   void next() {
     setState(() {
-    isAlPath = false;
+      isAlPath = false;
     });
     isAnimation = true;
     isNext = true;
     currentA = Point(size.width - 50, size.height - 50);
-    _controller.forward(
+    _controller?.forward(
       from: 0,
     );
   }
@@ -292,9 +301,7 @@ class CurrentPaperClipPath extends CustomClipper<Path> {
   ValueNotifier<PaperPoint> p;
   bool isNext;
 
-  CurrentPaperClipPath(
-    this.p,this.isNext
-  ) : super(reclip: p);
+  CurrentPaperClipPath(this.p, this.isNext) : super(reclip: p);
 
   @override
   Path getClip(Size size) {
@@ -327,14 +334,12 @@ class CurrentPaperClipPath extends CustomClipper<Path> {
 
     } else {
       // 全区域 Path
-      if(isNext){
+      if (isNext) {
         return Path();
-      }else{
+      } else {
         return mPath;
       }
-      }
-
-
+    }
   }
 
   @override
