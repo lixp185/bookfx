@@ -8,7 +8,5 @@ class Assets {
   static const String srcBookFx = 'lib/src/book_fx.dart';
   static const String srcEBook = 'lib/src/e_book.dart';
   static const String srcEbookController = 'lib/src/ebook_controller.dart';
-  static const String utilsPage = 'lib/src/utils/page.dart';
   static const String utilsText = 'lib/src/utils/text.dart';
-
 }
