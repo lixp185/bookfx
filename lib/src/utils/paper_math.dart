@@ -26,6 +26,7 @@ Line calculateLineEquation(Point<double> p1, Point<double> p2) {
   return Line(p1, p2, slope, intercept);
 }
 
+/// 求两直线相交点
 Point<double> calculateIntersectionOfTwoLines(
   Point<double> a,
   Point<double> b,
@@ -44,22 +45,18 @@ Point<double> calculateIntersectionOfTwoLines(
   );
 }
 
-Point<double> projectPointToLine(
-  Point<double> p1,
-  Point<double> p2,
-  double slope,
-  double distance,
-) {
+/// 求点到直线的投影坐标
+Point<double> projectPointToLine(Line line, double distance) {
   double x = 0.0;
   double y = 0.0;
 
-  if (slope > 0 || p1.y >= p2.y) {
-    x = p1.x - sqrt(distance * distance / (1 + (slope * slope)));
-    y = p1.y - sqrt(distance * distance / (1 + (slope * slope))) * slope;
+  final slope = line.slope;
+  if (slope > 0 || line.a.y >= line.b.y) {
+    x = line.a.x - sqrt(distance * distance / (1 + (slope * slope)));
+    y = line.a.y - sqrt(distance * distance / (1 + (slope * slope))) * slope;
   } else {
-    x = p1.x + sqrt(distance * distance / (1 + (slope * slope)));
-    y = p1.y + sqrt(distance * distance / (1 + (slope * slope))) * slope;
+    x = line.a.x + sqrt(distance * distance / (1 + (slope * slope)));
+    y = line.a.y + sqrt(distance * distance / (1 + (slope * slope))) * slope;
   }
-
   return Point(x, y);
 }

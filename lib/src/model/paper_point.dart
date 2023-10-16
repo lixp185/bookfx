@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:bookfx/src/model/line.dart';
-import 'package:bookfx/src/utils/page_math.dart';
+import 'package:bookfx/src/utils/paper_math.dart';
 
 class PaperPoint {
   // 手指拉拽点
@@ -72,7 +72,7 @@ class PaperPoint {
     i = Point((to.x + h.x) / 2, (to.y + h.y) / 2);
 
     Line ae = calculateLineEquation(a, e);
-    p1 = projectPointToLine(a, h, ahSlope, elevationC);
-    p2 = projectPointToLine(a, e, ae.slope, elevationC);
+    p1 = projectPointToLine(ah, elevationC);
+    p2 = projectPointToLine(ae, elevationC);
   }
 }

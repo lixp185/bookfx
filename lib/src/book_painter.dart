@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:bookfx/src/model/paper_point.dart';
-import 'package:bookfx/src/utils/page_math.dart';
+import 'package:bookfx/src/utils/paper_math.dart';
 import 'package:flutter/material.dart';
 
 class BookPainter extends CustomPainter {
