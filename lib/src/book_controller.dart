@@ -6,19 +6,19 @@ class BookController extends ChangeNotifier {
   int goToIndex = 0; // 跳转页
 
   /// 上一页
-  last() {
+  void last() {
     nextType = -1;
     notifyListeners();
   }
 
   /// 下一页
-   next() {
+  void next() {
     nextType = 1;
     notifyListeners();
   }
 
-  // 跳页
-  goTo(int index) {
+  /// 跳页
+  void goTo(int index) {
     nextType = 0;
     goToIndex = index;
     notifyListeners();
