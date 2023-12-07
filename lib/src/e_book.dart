@@ -31,18 +31,18 @@ class EBook extends StatefulWidget {
   final BookController bookController;
   final Duration? duration;
 
-  const EBook(
-      {Key? key,
-      required this.maxWidth,
-      required this.data,
-      required this.maxHeight,
-      this.fontSize = 16.0,
-      this.padding = const EdgeInsetsDirectional.all(20),
-      this.eBookController,
-      required this.bookController,
-      this.fontHeight = 1.4,
-      this.duration})
-      : super(key: key);
+  const EBook({
+    Key? key,
+    required this.maxWidth,
+    required this.data,
+    required this.maxHeight,
+    this.fontSize = 16.0,
+    this.padding = const EdgeInsetsDirectional.all(20),
+    this.eBookController,
+    required this.bookController,
+    this.fontHeight = 1.4,
+    this.duration,
+  }) : super(key: key);
 
   @override
   State<EBook> createState() => _EBookState();
