@@ -65,7 +65,6 @@ class _EBookState extends State<EBook> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       /// 文本区域高度 \r\n 计算有误 ... 高度有误
       data = widget.data.replaceAll('\r\n', '\n');
-
       /// 单行文字高度
       textHeight = TextUtil.calculateTextHeight('发发发...', widget.fontSize,
           fontHeight: widget.fontHeight,
@@ -77,16 +76,8 @@ class _EBookState extends State<EBook> {
 
       /// 文本最大高度 648
       maxTextHeight = (widget.maxHeight - widget.padding.vertical) ~/ textHeight * textHeight;
-
       /// 获取书籍所有页码
-      // loadPages().then((value) {
-      //   // print("字号$fontSize");
-      //   setState(() {});
-      // });
-      // });
-
-      /// 获取书籍所有页码
-      loadPages2();
+      loadPages();
     });
   }
 
@@ -150,7 +141,7 @@ class _EBookState extends State<EBook> {
                     );
             },
             currentPage: (int index) {
-              print('当前哦index $index ${allPages[index]}');
+              print('当前哦index $index ${allPages[index]} == ${data.substring(allPages[index], allPages[index + 1])}');
 
               /// 当前页 index 页码
               return Stack(
@@ -190,86 +181,7 @@ class _EBookState extends State<EBook> {
   }
 
   List<int> allPages = [];
-
-  /// 每页最多1000字计算
   Future loadPages() async {
-    allPages.clear();
-    debugPrint("开始${DateTime.now()}");
-    var request = TaskRequest(data, widget.fontSize, widget.fontHeight,
-        widget.maxWidth, widget.padding, maxTextHeight);
-
-    return await Future(() {
-      List<int> allPages = [];
-      int num = 0;
-      int index = 0;
-      allPages.add(index);
-      int left = index;
-      int right = 1000;
-      while (true) {
-        num++;
-        if (right >= request.data.length) {
-          right = request.data.length;
-        }
-
-        int mid = (left + right) ~/ 2;
-        if (TextUtil.calculateTextHeight(
-                request.data.substring(index, mid), request.fontSize,
-                fontHeight: request.fontHeight,
-                maxWidth: request.maxWidth,
-                padding: request.padding) ==
-            request.maxTextHeight) {
-          for (int i = 0; i < 100; i++) {
-            num++;
-            if (TextUtil.calculateTextHeight(
-                    request.data.substring(index, mid + i), request.fontSize,
-                    fontHeight: request.fontHeight,
-                    maxWidth: request.maxWidth,
-                    padding: request.padding) >
-                request.maxTextHeight) {
-              index = mid + i - 1;
-              left = index;
-              right = index + 1000;
-              if (index < request.data.length - 3 &&
-                  request.data.substring(index, index + 3).startsWith('\n')) {
-                index += 2;
-              }
-              allPages.add(index);
-              break;
-            }
-          }
-        } else if (TextUtil.calculateTextHeight(
-                request.data.substring(index, mid), request.fontSize,
-                fontHeight: request.fontHeight,
-                maxWidth: request.maxWidth,
-                padding: request.padding) <
-            request.maxTextHeight) {
-          if (mid >= data.length - 1) {
-            allPages.add(mid);
-            TaskResult result = TaskResult(cost: 200, result: allPages);
-            setState(() {
-              this.allPages.addAll(result.result);
-              isOver = true;
-            });
-            debugPrint("结束");
-            debugPrint("allPages ${allPages.toString()}");
-            debugPrint("结束${DateTime.now()}");
-            debugPrint("结束循环次数$num");
-            return result;
-          }
-          left = mid + 1;
-        } else if (TextUtil.calculateTextHeight(
-                request.data.substring(index, mid), request.fontSize,
-                fontHeight: request.fontHeight,
-                maxWidth: request.maxWidth,
-                padding: request.padding) >
-            request.maxTextHeight) {
-          right = mid - 1;
-        }
-      }
-    });
-  }
-
-  Future loadPages2() async {
     allPages.clear();
     DateTime.now();
     debugPrint("开始${DateTime.now()}");
@@ -310,79 +222,6 @@ class _EBookState extends State<EBook> {
     });
   }
 
-  static Future<TaskResult> _doTaskPageIndex(TaskRequest request) async {
-    List<int> allPages = [];
-    int num = 0;
-    int index = 0;
-    allPages.add(index);
-    int left = index;
-    int right = 1000;
-    while (true) {
-      num++;
-      if (right >= request.data.length) {
-        right = request.data.length;
-        debugPrint("结尾 ");
-        if (TextUtil.calculateTextHeight(
-                request.data.substring(left, right), request.fontSize,
-                fontHeight: request.fontHeight,
-                maxWidth: request.maxWidth,
-                padding: request.padding) <=
-            request.maxTextHeight) {
-          allPages.add(left);
-          debugPrint("结束");
-          debugPrint("allPages ${allPages.toString()}");
-          debugPrint("结束${DateTime.now()}");
-          debugPrint("结束循环次数$num");
-          TaskResult result = TaskResult(cost: 200, result: allPages);
-          return result;
-        }
-      }
-      int mid = (left + right) ~/ 2;
-      if (TextUtil.calculateTextHeight(
-              request.data.substring(index, mid), request.fontSize,
-              fontHeight: request.fontHeight,
-              maxWidth: request.maxWidth,
-              padding: request.padding) ==
-          request.maxTextHeight) {
-        for (int i = 0; i < 100; i++) {
-          num++;
-          if (TextUtil.calculateTextHeight(
-                  request.data.substring(index, mid + i), request.fontSize,
-                  fontHeight: request.fontHeight,
-                  maxWidth: request.maxWidth,
-                  padding: request.padding) >
-              request.maxTextHeight) {
-            index = mid + i - 1;
-            left = index;
-            right = index + 1000;
-            if (index < request.data.length - 3 &&
-                request.data.substring(index, index + 3).startsWith(''
-                    '\n')) {
-              index += 2;
-            }
-            allPages.add(index);
-
-            break;
-          }
-        }
-      } else if (TextUtil.calculateTextHeight(
-              request.data.substring(index, mid), request.fontSize,
-              fontHeight: request.fontHeight,
-              maxWidth: request.maxWidth,
-              padding: request.padding) <
-          request.maxTextHeight) {
-        debugPrint('left $left');
-        left = mid + 1;
-      } else if (TextUtil.calculateTextHeight(
-              request.data.substring(index, mid), request.fontSize,
-              fontHeight: request.fontHeight,
-              maxWidth: request.maxWidth,
-              padding: request.padding) >
-          request.maxTextHeight) {
-        right = mid - 1;
-      }
-    }
-  }
 }
 
 class TaskRequest {
